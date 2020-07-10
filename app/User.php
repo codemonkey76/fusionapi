@@ -5,6 +5,9 @@ namespace App;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -36,4 +39,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function generateToken()
+    {
+        return Crypt::encryptString(
+            Collection::make([
+                'valid' => now()
+                    ->addMinutes(config('auth.guards.api.token-expiry'))
+                    ->toDateTimeString(),
+                'user' => $this->id
+            ])
+        );
+    }
 }

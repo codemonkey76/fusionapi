@@ -42,7 +42,8 @@ return [
         ],
 
         'api' => [
-            'driver' => 'token',
+            'driver' => 'service-token',
+            'token-expiry' => 30,
             'provider' => 'users',
             'hash' => false,
         ],
