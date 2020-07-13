@@ -18,7 +18,7 @@ class AddTokenToResponse
     {
         $response = $next($request);
 
-        $response->headers->set('token', Auth::user()->generateToken());
+        if (Auth::check()) $response->headers->set('token', Auth::user()->generateToken());
 
         return $response;
     }
