@@ -1,6 +1,5 @@
 <?php
 
-use App\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
