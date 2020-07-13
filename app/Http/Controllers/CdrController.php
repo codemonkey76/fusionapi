@@ -12,9 +12,10 @@ class CdrController extends Controller
     {
         if (request()->has('date')) {
             $date = Carbon::parse(request('date'));
-            return Cdr::whereDate('start_stamp', '=', $date)->pluck('direction');
+        } else {
+            $date = Carbon::now()->subDay();
         }
 
-        return Cdr::where('direction', 'outbound')->get();
+        return Cdr::whereDate('end_stamp', '=', $date)->get();
     }
 }
