@@ -12,7 +12,7 @@ class CdrController extends Controller
     {
         $data = request()->validate([
             'date' => 'sometimes|date',
-            'hours' => 'sometimes|number'
+            'hours' => 'sometimes|numeric'
         ]);
 
         if (request()->has('date')) {
@@ -26,7 +26,7 @@ class CdrController extends Controller
         } else {
             $hours = 4;
         }
-        
+
         return Cdr::whereBetween('end_stamp', [$date->subHours($hours), $date])->get();
     }
 }
