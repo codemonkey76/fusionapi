@@ -3,19 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Cdr;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
 class CdrController extends Controller
 {
     public function index()
     {
+        $data = request()->validate([
+            'date' => 'sometimes|date',
+            'hours' => 'sometimes|number'
+        ]);
+
         if (request()->has('date')) {
-            $date = Carbon::parse(request('date'));
+            $date = CarbonImmutable::parse(request('date'));
         } else {
-            $date = Carbon::now()->subDay();
+            $date = CarbonImmutable::now();
         }
 
-        return Cdr::whereDate('end_stamp', '=', $date)->get();
+        if (request()->has('hours')) {
+            $hours = intval(request('hours'));
+        } else {
+            $hours = 4;
+        }
+        
+        return Cdr::whereBetween('end_stamp', [$date->subHours($hours), $date])->get();
     }
 }
