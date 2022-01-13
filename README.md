@@ -1,6 +1,7 @@
 ## About FusionApi
 
 This is a simple API for extracting calls for use in a billing system. Authentication is handled by laravel sanctum, and php 8.0 is required on the FusionPBX server.
+For deployment, check out the DEPLOYMENT.md file.
 
 ## Authorization
 
