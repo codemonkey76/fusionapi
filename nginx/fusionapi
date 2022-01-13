@@ -2,7 +2,7 @@ server {
 	listen 82;
 	listen [::]:82;
 
-	root /home/shane/fusionapi/public;
+	root ;
 
 	index index.php index.html index.htm;
 
