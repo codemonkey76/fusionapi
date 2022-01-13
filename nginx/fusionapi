@@ -1,0 +1,23 @@
+server {
+	listen 82;
+	listen [::]:82;
+
+	root /home/shane/fusionapi/public;
+
+	index index.php index.html index.htm;
+
+	server_name ;
+
+	location / {
+		try_files $uri $uri/ /index.php?$query_string;
+	}
+
+	location ~ \.php$ {
+		include snippets/fastcgi-php.conf;
+		fastcgi_pass unix:/run/php/php8.0-fpm.sock;
+	}
+
+	location ~ /\.ht {
+		deny all;
+	}
+}
