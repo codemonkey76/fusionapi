@@ -47,7 +47,8 @@ class AuthController extends Controller
 
             $response = [
                 'user' => $user,
-                'token' => $token
+                'token' => $token,
+                'success' => true
             ];
 
             return response($response, 201);
@@ -61,7 +62,10 @@ class AuthController extends Controller
         ]);
 
         if (!auth()->attempt($validated)) {
-            return response()->json(['message' => 'Invalid credentials.']);
+            return response()->json([
+                'message' => 'Invalid credentials.',
+                'success' => false
+            ]);
         }
 
         $user = auth()->user();
@@ -70,7 +74,8 @@ class AuthController extends Controller
 
         $response = [
             'user' => $user,
-            'token' => $token
+            'token' => $token,
+            'success' => true
         ];
 
         return response($response, 201);
@@ -79,6 +84,9 @@ class AuthController extends Controller
     public function logout()
     {
         auth()->user()->tokens()->delete();
-        return response()->json(['message' => 'Logged out successfully.']);
+        return response()->json([
+            'message' => 'Logged out successfully.',
+            'success' => true
+        ]);
     }
 }
