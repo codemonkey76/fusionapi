@@ -30,7 +30,7 @@ sed -i "s/DB2_PASSWORD=$/DB2_PASSWORD=$(cat /etc/fusionpbx/config.php | grep db_
 
 # alter the nginx config so that the servername is reflected
 sed -i "s/server_name ;/server_name $(hostname -f);/g" ~/fusionapi/nginx/fusionapi
-sed -i "s/root ;/root $(pwd)\/public;/g" ~/fusionapi/nginx/fusionapi
+sed -i "s:root ;:root $(pwd)/public;:g" ~/fusionapi/nginx/fusionapi
 sudo ln -s ~/fusionapi/nginx/fusionapi /etc/nginx/sites-enabled/fusion-api
 
 sudo /etc/init.d/nginx reload
