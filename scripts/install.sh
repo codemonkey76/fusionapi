@@ -1,4 +1,5 @@
 #!/bin/bash
+cd ~
 
 #Install php 8.0 and dependencies
 sudo apt install -y ca-certificates apt-transport-https software-properties-common gnupg2
@@ -21,4 +22,15 @@ composer install
 cp .env.example .env
 php artisan key:generate
 touch database/database.sqlite
+
+# Alter the .env to grab the local FusionPBX database password
 sed -i "s/DB2_PASSWORD=$/DB2_PASSWORD=$(cat /etc/fusionpbx/config.php | grep db_password | awk -F\' '{print $2}')/g" .env
+
+# alter the nginx config so that the servername is reflected
+sed -i "s/server_name ;/server_name $(hostname -f);/g" ~/fusionapi/nginx/fusionapi
+
+sudo ln -s ~/fusionapi/nginx/fusionapi /etc/nginx/sites-enabled/fusion-api
+
+sudo /etc/init.d/nginx reload
+sudo iptables -A INPUT -p tcp --dport 82 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+sudo iptables -A OUTPUT -p tcp --sport 82 -m conntrack --ctstate ESTABLISHED -j ACCEPT
