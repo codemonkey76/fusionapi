@@ -37,3 +37,4 @@ sudo ln -s ~/fusionapi/nginx/fusionapi /etc/nginx/sites-enabled/fusion-api
 sudo /etc/init.d/nginx reload
 sudo iptables -A INPUT -p tcp --dport 82 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 sudo iptables -A OUTPUT -p tcp --sport 82 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
