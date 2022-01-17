@@ -22,6 +22,8 @@ composer install
 cp .env.example .env
 php artisan key:generate
 touch database/database.sqlite
+sudo chown -R www-data:www-data ./database
+sudo chmod -R 777 ./database/
 sudo chown -R www-data:www-data ./public
 sudo chown -R www-data:www-data ./storage
 php artisan migrate
