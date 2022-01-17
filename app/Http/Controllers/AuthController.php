@@ -34,6 +34,14 @@ class AuthController extends Controller
             ],
         ]);
         $validator->stopOnFirstFailure();
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Failed validation',
+                'success' => false
+                ]);
+        }
+
         $validated = $validator->validate();
 
             $user = User::create([
