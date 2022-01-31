@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CdrController;
-use App\Http\Controller\ActiveCallController;
+use App\Http\Controllers\ActiveCallController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
