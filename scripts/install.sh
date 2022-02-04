@@ -6,6 +6,9 @@ DISTRO=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
 
 sudo apt install -y software-properties-common
 
+#Get current php version
+PHP_VER_ORIG=$(readlink /etc/alternatives/php)
+
 if [ "$DISTRO" == "Debian" ]; then
     #Install php 8.0 and dependencies
 
@@ -40,7 +43,7 @@ php artisan key:generate
 #php artisan migrate
 
 
-sudo update-alternatives --set php /usr/bin/php7.4
+sudo update-alternatives --set php $PHP_VER_ORIG
 
 # Alter the .env to grab the local FusionPBX database password
 sed -i "s/DB2_PASSWORD=$/DB2_PASSWORD=$(cat /etc/fusionpbx/config.php | grep db_password | awk -F\' '{print $2}')/g" .env
