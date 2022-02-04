@@ -35,9 +35,17 @@ cd fusionapi
 composer install
 cp .env.example .env
 php artisan key:generate
+
+echo "Make directory /etc/fusionapi"
 sudo mkdir /etc/fusionapi
+
+echo "Make database.sqlite file"
 sudo touch /etc/fusionapi/database.sqlite
+
+echo "Change ownership of database file"
 sudo chown www-data:www-data /etc/fusionapi/database.sqlite
+
+echo "Migrate database"
 php artisan migrate
 
 sudo update-alternatives --set php $PHP_VER_ORIG
@@ -47,7 +55,6 @@ sed -i "s/DB2_PASSWORD=$/DB2_PASSWORD=$(cat /etc/fusionpbx/config.php | grep db_
 
 # alter the nginx config so that the servername is reflected
 
-sudo mkdir /etc/fusionapi
 sudo cp ~/fusionapi/nginx/fusionapi /etc/fusionapi/nginx.conf
 sudo sed -i "s/server_name ;/server_name $(hostname -f);/g" /etc/fusionapi/nginx.conf
 sudo sed -i "s:root ;:root $(pwd)/public;:g" /etc/fusionapi/nginx.conf
