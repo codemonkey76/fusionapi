@@ -1,10 +1,21 @@
 #!/bin/bash
 cd ~
 
-#Install php 8.0 and dependencies
-sudo apt install -y ca-certificates apt-transport-https software-properties-common gnupg2
-echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/sury-php.list
-wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -
+DISTRO=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
+
+
+sudo apt install -y software-properties-common
+
+if [ "$DISTRO" == "Debian" ]; then
+    #Install php 8.0 and dependencies
+
+    sudo apt install -y ca-certificates apt-transport-https gnupg2
+    echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/sury-php.list
+    wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -
+elif [ "$DISTRO" == "Ubuntu" ]; then
+    sudo add-apt-repository ppa:ondrej/php
+fi
+
 sudo apt update
 sudo apt install -y php8.0 php-xml php-curl php-sqlite3 php-pgsql php8.0-fpm
 
@@ -32,9 +43,12 @@ php artisan migrate
 sed -i "s/DB2_PASSWORD=$/DB2_PASSWORD=$(cat /etc/fusionpbx/config.php | grep db_password | awk -F\' '{print $2}')/g" .env
 
 # alter the nginx config so that the servername is reflected
-sed -i "s/server_name ;/server_name $(hostname -f);/g" ~/fusionapi/nginx/fusionapi
-sed -i "s:root ;:root $(pwd)/public;:g" ~/fusionapi/nginx/fusionapi
-sudo ln -s ~/fusionapi/nginx/fusionapi /etc/nginx/sites-enabled/fusion-api
+
+sudo mkdir /etc/fusionapi
+sudo cp ~/fusionapi/nginx/fusionapi /etc/fusionapi/nginx.conf
+sudo sed -i "s/server_name ;/server_name $(hostname -f);/g" /etc/fusionapi/nginx.conf
+sed -i "s:root ;:root $(pwd)/public;:g" /etc/fusionapi/nginx.conf
+sudo ln -s /etc/fusionapi/nginx.conf /etc/nginx/sites-enabled/fusion-api
 
 sudo /etc/init.d/nginx reload
 sudo iptables -A INPUT -p tcp --dport 82 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
