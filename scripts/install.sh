@@ -42,8 +42,10 @@ sudo mkdir /etc/fusionapi
 echo "Make database.sqlite file"
 sudo touch /etc/fusionapi/database.sqlite
 
-echo "Change ownership of database file"
+echo "Change ownership & permissions of database file"
 sudo chown www-data:www-data /etc/fusionapi/database.sqlite
+sudo chmod 777 /etc/fusionapi
+sudo chmod 777 /etc/fusionapi/database.sqlite
 
 echo "Migrate database"
 php artisan migrate
