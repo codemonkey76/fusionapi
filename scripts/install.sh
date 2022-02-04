@@ -17,7 +17,7 @@ elif [ "$DISTRO" == "Ubuntu" ]; then
 fi
 
 sudo apt update
-sudo apt install -y php8.0 php-xml php-curl php-sqlite3 php-pgsql php8.0-fpm
+sudo apt install -y php8.0 php8.0-xml php8.0-curl php8.0-sqlite3 php8.0-pgsql php8.0-fpm
 
 #Install composer
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
