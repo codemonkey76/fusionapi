@@ -22,7 +22,12 @@ if [ "$DISTRO" == "Debian" ]; then
     echo "Adding apt key"
     wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -
 elif [ "$DISTRO" == "Ubuntu" ]; then
+    echo "Detected UBUNTU distribution"
+    echo "Adding ppa:ondrej/php"
     sudo add-apt-repository ppa:ondrej/php
+else
+    echo "Could not determine distribution, failed!"
+    exit 1;
 fi
 
 sudo apt update
