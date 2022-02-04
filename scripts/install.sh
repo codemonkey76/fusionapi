@@ -32,12 +32,12 @@ cd fusionapi
 composer install
 cp .env.example .env
 php artisan key:generate
-touch database/database.sqlite
-sudo chown -R www-data:www-data ./database
-sudo chmod -R 777 ./database/
-sudo chown -R www-data:www-data ./public
-sudo chown -R www-data:www-data ./storage
-php artisan migrate
+#touch database/database.sqlite
+#sudo chown -R www-data:www-data ./database
+#sudo chmod -R 777 ./database/
+#sudo chown -R www-data:www-data ./public
+#sudo chown -R www-data:www-data ./storage
+#php artisan migrate
 
 
 sudo update-alternatives --set php /usr/bin/php7.4
