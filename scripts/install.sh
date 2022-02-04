@@ -50,6 +50,9 @@ sudo chmod 777 /etc/fusionapi/database.sqlite
 echo "Migrate database"
 php artisan migrate
 
+echo "Setup permissions for laravel to access logs"
+sudo chmod -R 777 storage
+
 sudo update-alternatives --set php $PHP_VER_ORIG
 
 # Alter the .env to grab the local FusionPBX database password
