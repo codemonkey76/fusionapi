@@ -12,8 +12,14 @@ PHP_VER_ORIG=$(readlink /etc/alternatives/php)
 if [ "$DISTRO" == "Debian" ]; then
     #Install php 8.0 and dependencies
 
+    echo "Detected DEBIAN distribution"
+    echo "Installing some pre-reqs"
     sudo apt install -y ca-certificates apt-transport-https gnupg2
+    
+    echo "Adding php source sury-php.list"
     echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/sury-php.list
+
+    echo "Adding apt key"
     wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -
 elif [ "$DISTRO" == "Ubuntu" ]; then
     sudo add-apt-repository ppa:ondrej/php
