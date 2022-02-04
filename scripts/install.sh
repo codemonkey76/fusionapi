@@ -35,6 +35,7 @@ cd fusionapi
 composer install
 cp .env.example .env
 php artisan key:generate
+sudo mkdir /etc/fusionapi
 sudo touch /etc/fusionapi/database.sqlite
 sudo chown www-data:www-data /etc/fusionapi/database.sqlite
 php artisan migrate
