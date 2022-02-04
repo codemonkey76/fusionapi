@@ -39,6 +39,9 @@ sudo chown -R www-data:www-data ./public
 sudo chown -R www-data:www-data ./storage
 php artisan migrate
 
+
+sudo update-alternatives --set php /usr/bin/php7.4
+
 # Alter the .env to grab the local FusionPBX database password
 sed -i "s/DB2_PASSWORD=$/DB2_PASSWORD=$(cat /etc/fusionpbx/config.php | grep db_password | awk -F\' '{print $2}')/g" .env
 
