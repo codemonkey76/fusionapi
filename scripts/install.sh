@@ -9,7 +9,7 @@ sudo apt install -y software-properties-common
 #Get current php version
 PHP_VER_ORIG=$(readlink /etc/alternatives/php)
 
-if [ "$DISTRO" == "Debian" ]; then
+if [[ "$DISTRO" = "Debian" ]]; then
     #Install php 8.0 and dependencies
 
     echo "Detected DEBIAN distribution"
@@ -21,7 +21,7 @@ if [ "$DISTRO" == "Debian" ]; then
 
     echo "Adding apt key"
     wget -qO - https://packages.sury.org/php/apt.gpg | sudo apt-key add -
-elif [ "$DISTRO" == "Ubuntu" ]; then
+elif [[ "$DISTRO" = "Ubuntu" ]]; then
     echo "Detected UBUNTU distribution"
     echo "Adding ppa:ondrej/php"
     sudo add-apt-repository ppa:ondrej/php
