@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ~
 
-DISTRO=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
+DISTRO=$(lsb_release -i | cut -d: -f2 | sed 's/<TAB>//')
 
 
 sudo apt install -y software-properties-common
