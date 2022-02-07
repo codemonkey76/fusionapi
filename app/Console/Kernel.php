@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Symfony\Component\Process\Process;
 
 class Kernel extends ConsoleKernel
 {
@@ -15,7 +16,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('active_calls:get')->everyMinute();
+        $schedule->command('active_calls:prune')->daily();
     }
 
     /**

@@ -31,7 +31,7 @@ else
 fi
 
 sudo apt update
-sudo apt install -y php8.0 php8.0-xml php8.0-curl php8.0-sqlite3 php8.0-pgsql php8.0-fpm
+sudo apt install -y php8.0 php8.0-xml php8.0-curl php8.0-sqlite3 php8.0-pgsql php8.0-fpm php8.0-mbstring
 
 #Install composer
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -80,3 +80,5 @@ sudo /etc/init.d/nginx reload
 sudo iptables -A INPUT -p tcp --dport 82 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 sudo iptables -A OUTPUT -p tcp --sport 82 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
+
+crontab -l | { cat; echo "* * * * * cd ~/fusionapi && php artisan schedule:run >> /dev/null 2>&1"; } | crontab -

@@ -11,7 +11,8 @@
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.13",
         "laravel/tinker": "^2.5",
-        "symfony/process": "*"
+        "symfony/process": "*",
+        "ext-json": "*"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
