@@ -25,7 +25,7 @@ class ActiveCallController extends Controller
 
         $validated = $validator->validated();
 
-        $date = data_get($validated, Carbon::createFromtimestamp(strtotime('date')), now());
+        $date = Carbon::createFromTimestamp(strtotime(data_get($validated, 'date', now())));
           return response()
             ->json($this->getCallsByDate($date));
     }
