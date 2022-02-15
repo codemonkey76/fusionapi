@@ -38,7 +38,7 @@ class PruneActiveCalls extends Command
      */
     public function handle()
     {
-        ActiveCall::where('created_at', '<', now()->subDay())->delete();
+        ActiveCall::where('created_at', '<', now()->subDays(7))->delete();
         return 0;
     }
 }
