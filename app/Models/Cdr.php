@@ -10,7 +10,7 @@ class Cdr extends Model
     protected $connection = 'pgsql';
     protected $table = 'v_xml_cdr';
     protected $hidden = [
-        'json', 'last_arg', 'default_language', 'context', 'start_epoch', 'answer_epoch', 'end_epoch',
+        'json', 'last_arg', 'default_language', 'context',
         'bridge_uuid', 'read_codec', 'read_rate', 'write_codec', 'write_rate', 'remote_media_ip',
         'network_addr', 'record_path', 'record_name', 'leg', 'ppd_ms', 'rtp_audio_in_mos', 'last_app',
         'cc_side', 'cc_member_uuid', 'cc_queue_joined_epoch', 'cc_queue', 'cc_member_session_uuid',
