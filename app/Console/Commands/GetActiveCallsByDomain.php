@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Cdr;
 use App\Models\ActiveCall;
 use Illuminate\Console\Command;
 use Symfony\Component\Process\Process;
@@ -28,14 +29,18 @@ class GetActiveCallsByDomain extends Command
 
             if (isset($jsonArray['rows'])) {
                 $data = collect($jsonArray['rows']);
-                
+
                 $results = $data->reduce(fn($carry, $item) => $this->reducer($carry, $item));
                 collect($results)
-                    ->each(fn($counts, $domain) => ActiveCall::create([
-                        'domain' => $domain,
-                        'inbound' => $counts['inbound'],
-                        'outbound' => $counts['outbound']
-                    ]));
+                    ->each(function($counts, $domain) {
+                        $this->info("Domain: $domain, Inbound: {$counts['inbound']}, Outbound: {$counts['outbound']}");
+
+                        return ActiveCall::create([
+                            'domain' => $domain,
+                            'inbound' => $counts['inbound'],
+                            'outbound' => $counts['outbound']
+                        ]);
+                    });
             } else {
                 $this->info("No active calls to process.");
             }
@@ -50,7 +55,9 @@ class GetActiveCallsByDomain extends Command
 
     // Used to summarize active call records into just the domain name and total inbound / outbound calls.
     private function reducer($carry, $item) {
-        $domain = empty($item['accountcode']) ? $item['b_accountcode'] : $item['accountcode'];
+        $uuid = $item['uuid'];
+        $domain = Cdr::where('xml_cdr_uuid', $uuid)->pluck('domain_name')->first();
+        $domain = $domain ?? empty($item['accountcode']) ? $item['b_accountcode'] : $item['accountcode'];
 
         if (!isset($carry[$domain])) {
             $carry[$domain] = ['inbound' => 0, 'outbound' => 0];
