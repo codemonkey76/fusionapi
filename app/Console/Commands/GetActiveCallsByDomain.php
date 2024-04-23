@@ -23,7 +23,7 @@ class GetActiveCallsByDomain extends Command
         try {
             $process->mustRun();
 
-            $json = json_decode($process->getOutput());
+            $json = $process->getOutput();
 
             $data = collect(json_decode($json, true)['rows']);
 
