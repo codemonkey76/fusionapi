@@ -125,10 +125,13 @@ POST /api/logout
     "message": string,
 }
 ```
+### Get Active Calls
+
+This will return all
 
 ### Get All Calls
 
-This will return every call in the sytem for that domain_name... maybe you should use call_range instead?
+This will return every call in the system for that domain_name... maybe you should use call_range instead?
 
 ```http
 GET /api/calls
