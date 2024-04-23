@@ -36,6 +36,7 @@ class ActiveCallController extends Controller
         $to = clone($date)->endOfDay();
 
         return ActiveCall::query()
+            ->whereNull('domain')
             ->orderBy('created_at')
             ->whereBetween('created_at', [$from, $to])
             ->get()

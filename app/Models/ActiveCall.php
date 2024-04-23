@@ -9,5 +9,5 @@ class ActiveCall extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['inbound', 'outbound'];
+    protected array $fillable = ['inbound', 'outbound', 'domain'];
 }
