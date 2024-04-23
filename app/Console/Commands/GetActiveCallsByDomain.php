@@ -57,6 +57,7 @@ class GetActiveCallsByDomain extends Command
     private function reducer($carry, $item) {
         $uuid = $item['uuid'];
         $domain = Cdr::where('xml_cdr_uuid', $uuid)->pluck('domain_name')->first();
+        $this->info("cdr doesn't exist yet with uuid: " . $uuid);
         $domain = $domain ?? empty($item['accountcode']) ? $item['b_accountcode'] : $item['accountcode'];
 
         if (!isset($carry[$domain])) {
