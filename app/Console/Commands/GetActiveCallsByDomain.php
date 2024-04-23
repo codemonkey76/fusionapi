@@ -24,16 +24,21 @@ class GetActiveCallsByDomain extends Command
             $process->mustRun();
 
             $json = $process->getOutput();
+            $jsonArray = json_decode($json, true);
 
-            $data = collect(json_decode($json, true)['rows']);
-
-            $results = $data->reduce(fn ($carry, $item) => $this->reducer($carry, $item));
-            collect($results)
-                ->each(fn($counts, $domain) => ActiveCall::create([
-                    'domain' => $domain,
-                    'inbound' => $counts['inbound'],
-                    'outbound' => $counts['outbound']
-                ]));
+            if (isset($jsonArray['rows'])) {
+                $data = collect($jsonArray['rows']);
+                
+                $results = $data->reduce(fn($carry, $item) => $this->reducer($carry, $item));
+                collect($results)
+                    ->each(fn($counts, $domain) => ActiveCall::create([
+                        'domain' => $domain,
+                        'inbound' => $counts['inbound'],
+                        'outbound' => $counts['outbound']
+                    ]));
+            } else {
+                $this->info("No active calls to process.");
+            }
 
             return 0;
         } catch (ProcessFailedException $exception) {
