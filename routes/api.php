@@ -26,5 +26,5 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('call_range', [CdrController::class, 'range']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('active_calls', [ActiveCallController::class, 'index']);
-    Route::get('active_calls_by_domain', [ActiveCallController::class, 'getCallsByDomain']);exit();
+    Route::get('active_calls_by_domain', [ActiveCallController::class, 'getCallsByDomain']);
 });
