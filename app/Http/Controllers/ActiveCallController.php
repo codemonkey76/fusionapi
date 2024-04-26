@@ -74,15 +74,15 @@ DomainIntervals AS (
 ) SELECT
     start_interval,
     end_interval,
-    domain_name,
+    domain_name as domain,
     COALESCE(inbound, 0) AS inbound,
     COALESCE(outbound, 0) AS outbound,
     COALESCE(internal, 0) AS internal,
-    COALESCE(total_active, 0) AS total_active
+    COALESCE(total_active, 0) AS total
 FROM
     DomainIntervals
 ORDER BY
-    start_interval, domain_name;
+    start_interval, domain;
 ";
         $data = DB::connection("pgsql")->select(DB::raw($sql));
 
