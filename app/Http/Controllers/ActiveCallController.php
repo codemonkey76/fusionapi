@@ -1,4 +1,4 @@
-<?php
+composer<?php
 
 namespace App\Http\Controllers;
 
@@ -11,11 +11,14 @@ use Illuminate\Support\Facades\Validator;
 
 class ActiveCallController extends Controller
 {
-    public function getCallsByDomain(request $request): JsonResponse
+    public function getCallsByDomain(Request $request): JsonResponse
     {
-        $start = now()->subDays(2);
-        $start->setTime(9, 0, 0);
-        $end = (clone $start)->addHours(8);
+        $validated = $request->validate([
+            'date' => 'required|date|date_format:Y-m-d'
+        ]);
+        $start = Carbon::createFromFormat('Y-m-d', $validated['date']);
+        $start->setTime(5, 0, 0);
+        $end = (clone $start)->addHours(12);
         $resolution = "5 minutes";
 
         $sql =
