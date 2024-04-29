@@ -110,7 +110,7 @@ ORDER BY
             ";
 
         $data = DB::connection("pgsql")->select(DB::raw($sql));
-        return response()->json($data);
+        return response()->json(['data' => $data, 'sql' => $sql]);
     }
 
     public function getCallsByDomain(Request $request): JsonResponse
