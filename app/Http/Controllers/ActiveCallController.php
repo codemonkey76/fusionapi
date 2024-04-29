@@ -53,37 +53,21 @@ Timestamps AS (
         generate_series($startStamp, $endStamp - $resolution, $resolution)
 ),
 
-CallEvents AS (
-    SELECT v.domain_name, v.direction, v.start_stamp AS event_time, 1 AS event_change
-    FROM v_xml_cdr v
-    WHERE v.start_stamp BETWEEN '2024-04-29 00:00:00' AND '2024-04-29 23:59:59'
-    UNION ALL
-    SELECT v.domain_name, v.direction, v.end_stamp AS event_time, -1 AS event_change
-    FROM v_xml_cdr v
-    WHERE v.end_stamp BETWEEN '2024-04-29 00:00:00' AND '2024-04-29 23:59:59'
-),
-
-RunningTotals AS (
-    SELECT t.start_interval, t.end_interval, d.domain_name, e.direction, 
-           e.event_time,
-           SUM(e.event_change) OVER (PARTITION BY t.start_interval, t.end_interval, d.domain_name, e.direction ORDER BY e.event_time) AS active_calls
+ActiveCalls AS (
+    SELECT t.start_interval, t.end_interval, d.domain_name, v.direction,
+           COUNT(v.domain_name) AS active_calls -- Counting only where there is a matching call
     FROM Timestamps t
     CROSS JOIN Domains d
-    LEFT JOIN CallEvents e ON e.domain_name = d.domain_name AND e.event_time >= t.start_interval AND e.event_time < t.end_interval
-    GROUP BY t.start_interval, t.end_interval, d.domain_name, e.direction, e.event_time, e.event_change
-),
-
-MaxConcurrentCalls AS (
-    SELECT start_interval, end_interval, domain_name, direction,
-           MAX(active_calls) AS max_concurrent
-    FROM RunningTotals
-    GROUP BY start_interval, end_interval, domain_name, direction
+    LEFT JOIN v_xml_cdr v ON v.domain_name = d.domain_name AND 
+                             v.start_stamp < t.end_interval AND 
+                             v.end_stamp > t.start_interval
+    GROUP BY t.start_interval, t.end_interval, d.domain_name, v.direction
 ) SELECT start_interval, end_interval, domain_name AS domain, 
-       COALESCE(MAX(max_concurrent) FILTER (WHERE direction = 'inbound'), 0) AS inbound,
-       COALESCE(MAX(max_concurrent) FILTER (WHERE direction = 'outbound'), 0) AS outbound,
-       COALESCE(MAX(max_concurrent) FILTER (WHERE direction = 'internal'), 0) AS internal,
-       COALESCE(SUM(max_concurrent), 0) AS total
-FROM MaxConcurrentCalls
+       COALESCE(SUM(active_calls) FILTER (WHERE direction = 'inbound'), 0) AS inbound,
+       COALESCE(SUM(active_calls) FILTER (WHERE direction = 'outbound'), 0) AS outbound,
+       COALESCE(SUM(active_calls) FILTER (WHERE direction = 'internal'), 0) AS internal,
+       COALESCE(SUM(active_calls), 0) AS total
+FROM ActiveCalls
 GROUP BY start_interval, end_interval, domain_name
 ORDER BY start_interval, domain_name;
 
