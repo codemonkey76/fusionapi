@@ -53,21 +53,31 @@ Timestamps AS (
         generate_series($startStamp, $endStamp - $resolution, $resolution)
 ),
 
-ActiveCalls AS (
-    SELECT t.start_interval, t.end_interval, d.domain_name, v.direction,
-           COUNT(v.domain_name) AS active_calls -- Counting only where there is a matching call
+CallEvents AS (
+    SELECT v.domain_name, v.direction, v.start_stamp, v.end_stamp
+    FROM v_xml_cdr v
+),
+
+IntervalCalls AS (
+    SELECT t.start_interval, t.end_interval, d.domain_name, c.direction,
+           COUNT(*) FILTER (WHERE c.start_stamp <= t.end_interval AND c.end_stamp >= t.start_interval) AS concurrent_calls
     FROM Timestamps t
     CROSS JOIN Domains d
-    LEFT JOIN v_xml_cdr v ON v.domain_name = d.domain_name AND 
-                             v.start_stamp < t.end_interval AND 
-                             v.end_stamp > t.start_interval
-    GROUP BY t.start_interval, t.end_interval, d.domain_name, v.direction
-) SELECT start_interval, end_interval, domain_name AS domain, 
-       COALESCE(SUM(active_calls) FILTER (WHERE direction = 'inbound'), 0) AS inbound,
-       COALESCE(SUM(active_calls) FILTER (WHERE direction = 'outbound'), 0) AS outbound,
-       COALESCE(SUM(active_calls) FILTER (WHERE direction = 'internal'), 0) AS internal,
-       COALESCE(SUM(active_calls), 0) AS total
-FROM ActiveCalls
+    LEFT JOIN CallEvents c ON c.domain_name = d.domain_name
+    GROUP BY t.start_interval, t.end_interval, d.domain_name, c.direction
+),
+
+MaxConcurrentCalls AS (
+    SELECT start_interval, end_interval, domain_name, direction,
+           MAX(concurrent_calls) AS max_concurrent
+    FROM IntervalCalls
+    GROUP BY start_interval, end_interval, domain_name, direction
+) SELECT start_interval, end_interval, domain_name AS domain,
+       COALESCE(MAX(max_concurrent) FILTER (WHERE direction = 'inbound'), 0) AS inbound,
+       COALESCE(MAX(max_concurrent) FILTER (WHERE direction = 'outbound'), 0) AS outbound,
+       COALESCE(MAX(max_concurrent) FILTER (WHERE direction = 'internal'), 0) AS internal,
+       COALESCE(SUM(max_concurrent), 0) AS total -- Summing all max_concurrent per interval for total, across directions
+FROM MaxConcurrentCalls
 GROUP BY start_interval, end_interval, domain_name
 ORDER BY start_interval, domain_name;
 
