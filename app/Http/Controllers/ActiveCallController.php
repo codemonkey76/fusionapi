@@ -11,6 +11,108 @@ use Illuminate\Support\Facades\Validator;
 
 class ActiveCallController extends Controller
 {
+    public function getConcurrentCallsByDomain(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'date' => 'required|date|date_format:Y-m-d',
+            'resolution' => 'sometimes|nullable|in:1,5,15,30,60'
+        ]);
+
+        $start = Carbon::createFromFormat('Y-m-d', $validated['date'])->startOfDay();
+        $end = $start->endOfDay();
+        $res = $validated['resolution'] ?? 5;
+
+        $startStamp = "'${start}'::TIMESTAMP";
+        $endStamp = "'${end}'::TIMESTAMP";
+        $resolution = "'${res} minutes'::INTERVAL";
+
+        $sql =
+            "
+WITH
+Domains AS (
+    SELECT DISTINCT
+        domain_name
+    FROM
+        v_xml_cdr
+    WHERE
+        start_stamp < $endStamp AND
+        end_stamp > $startStamp
+),
+
+Timestamps AS (
+    SELECT
+        generate_series AS start_interval,
+        generate_series + $resolution - '1 second'::INTERVAL AS end_interval
+    FROM
+        generate_series($startStamp, $endStamp - $resolution, $resolution)
+),
+    
+CallEvents AS (
+    SELECT
+        v.domain_name,
+        v.direction,
+        v.start_stamp AS event_time,
+        1 AS event_type -- Start of call
+    FROM
+        v_xml_cdr v
+    UNION ALL
+    SELECT
+        v.domain_name,
+        v.direction,
+        v.end_stamp AS event_time,
+        -1 AS event_type -- End of call
+    FROM
+        v_xml_cdr v
+),
+    
+RunningTotals AS (
+    SELECT
+        t.start_interval,
+        t.end_interval,
+        d.domain_name,
+        e.direction,
+        SUM(SUM(e.event_type)) OVER (PARTITION BY d.domain_name, e.direction ORDER BY e.event_time) AS running_total
+    FROM
+        Timestamps t
+    CROSS JOIN
+        Domains d
+    JOIN
+        CallEvents e ON e.domain_name = d.domain_name AND e.event_time BETWEEN t.start_interval AND t.end_interval
+    GROUP BY
+        t.start_interval, t.end_interval, d.domain_name, e.direction, e.event_time
+),
+    
+MaxConcurrentCalls AS (
+    SELECT
+        start_interval,
+        end_interval,
+        domain_name,
+        direction,
+        MAX(running_total) AS max_concurrent
+    FROM
+        RunningTotals
+    GROUP BY
+        start_interval, end_interval, domain_name, direction
+) SELECT
+    start_interval,
+    end_interval,
+    domain_name,
+    coalesce(MAX(max_concurrent) FILTER (WHERE direction = 'inbound'), 0) AS inbound,
+    coalesce(MAX(max_concurrent) FILTER (WHERE direction = 'outbound'), 0) AS outbound,
+    coalesce(MAX(max_concurrent) FILTER (WHERE direction = 'internal'), 0) AS internal,
+    coalesce(SUM(max_concurrent), 0) AS total
+FROM
+    MaxConcurrentCalls
+GROUP BY
+    start_interval, end_interval, domain_name
+ORDER BY
+    start_interval, domain_name;
+            ";
+
+        $data = DB::connection("pgsql")->select(DB::raw($sql));
+        return response()->json($data);
+    }
+
     public function getCallsByDomain(Request $request): JsonResponse
     {
         $validated = $request->validate([

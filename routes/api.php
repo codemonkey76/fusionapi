@@ -27,4 +27,5 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('active_calls', [ActiveCallController::class, 'index']);
     Route::get('active_calls_by_domain', [ActiveCallController::class, 'getCallsByDomain']);
+    Route::get('concurrent_calls_by_domain', [ActiveCallController::class, 'getConcurrentCallsByDomain']);
 });
