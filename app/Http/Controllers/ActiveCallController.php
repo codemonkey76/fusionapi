@@ -15,7 +15,7 @@ class ActiveCallController extends Controller
     {
         $validated = $request->validate([
             'date' => 'required|date|date_format:Y-m-d',
-            'resolution' => 'sometimes|nullable|in:5,15,30,60'
+            'resolution' => 'sometimes|nullable|in:1,5,15,30,60'
         ]);
         $start = Carbon::createFromFormat('Y-m-d', $validated['date']);
         $start->setTime(5, 0, 0);
