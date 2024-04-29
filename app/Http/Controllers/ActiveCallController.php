@@ -19,7 +19,7 @@ class ActiveCallController extends Controller
         ]);
 
         $start = Carbon::createFromFormat('Y-m-d', $validated['date'])->startOfDay();
-        $end = $start->endOfDay();
+        $end = (clone $start)->endOfDay();
         $res = $validated['resolution'] ?? 5;
 
         $startStamp = "'${start}'::TIMESTAMP";
@@ -110,7 +110,7 @@ ORDER BY
             ";
 
         $data = DB::connection("pgsql")->select(DB::raw($sql));
-        return response()->json(['data' => $data, 'sql' => $sql]);
+        return response()->json($data);
     }
 
     public function getCallsByDomain(Request $request): JsonResponse
