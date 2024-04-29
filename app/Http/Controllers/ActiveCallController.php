@@ -96,7 +96,7 @@ MaxConcurrentCalls AS (
 ) SELECT
     start_interval,
     end_interval,
-    domain_name,
+    domain_name as domain,
     coalesce(MAX(max_concurrent) FILTER (WHERE direction = 'inbound'), 0) AS inbound,
     coalesce(MAX(max_concurrent) FILTER (WHERE direction = 'outbound'), 0) AS outbound,
     coalesce(MAX(max_concurrent) FILTER (WHERE direction = 'internal'), 0) AS internal,
