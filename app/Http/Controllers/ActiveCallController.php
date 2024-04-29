@@ -77,7 +77,7 @@ RunningTotals AS (
         t.end_interval,
         d.domain_name,
         e.direction,
-        SUM(SUM(e.event_type)) OVER (PARTITION BY d.domain_name, e.direction ORDER BY e.event_time) AS running_total
+        COALESCE(SUM(e.event_type), 0) as running_total
     FROM
         Timestamps t
     CROSS JOIN
@@ -85,7 +85,7 @@ RunningTotals AS (
     JOIN
         CallEvents e ON e.domain_name = d.domain_name AND e.event_time BETWEEN t.start_interval AND t.end_interval
     GROUP BY
-        t.start_interval, t.end_interval, d.domain_name, e.direction, e.event_time
+        t.start_interval, t.end_interval, d.domain_name, e.direction
 ),
     
 MaxConcurrentCalls AS (
