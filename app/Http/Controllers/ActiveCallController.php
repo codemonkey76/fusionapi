@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ActiveCallController extends Controller
@@ -25,6 +26,11 @@ class ActiveCallController extends Controller
         $startStamp = "'${start}'::TIMESTAMP";
         $endStamp = "'${end}'::TIMESTAMP";
         $resolution = "'${res} minutes'::INTERVAL";
+        Log::info("Params to query", [
+            'start' => $startStamp,
+            'end' => $endStamp,
+            'resolution' => $resolution
+        ]);
 
         $sql =
             "
@@ -108,7 +114,9 @@ GROUP BY
 ORDER BY
     start_interval, domain_name;
             ";
-
+        Log::info("Query to execute", [
+            'sql' => $sql
+        ]);
         $data = DB::connection("pgsql")->select(DB::raw($sql));
         return response()->json($data);
     }
