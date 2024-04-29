@@ -14,12 +14,14 @@ class ActiveCallController extends Controller
     public function getCallsByDomain(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'date' => 'required|date|date_format:Y-m-d'
+            'date' => 'required|date|date_format:Y-m-d',
+            'resolution' => 'sometimes|nullable|in:5,15,30,60'
         ]);
         $start = Carbon::createFromFormat('Y-m-d', $validated['date']);
         $start->setTime(5, 0, 0);
         $end = (clone $start)->addHours(12);
-        $resolution = "5 minutes";
+        $res = $validated['resolution'] ?? 5;
+        $resolution = "${res} minutes";
 
         $sql =
             "
