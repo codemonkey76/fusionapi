@@ -36,15 +36,15 @@ class ActiveCallController extends Controller
             "
 WITH ts_data AS (
 SELECT
-	generate_series AS start_interval,
+    generate_series AS start_interval,
     generate_series + $resolution - '1 second'::INTERVAL AS end_interval
 FROM
-	generate_series($startStamp, $endStamp - $resolution, $resolution)
+    generate_series($startStamp, $endStamp - $resolution, $resolution)
 ),
 
 call_events AS (
 SELECT ts1.xml_cdr_uuid,
-	ts1.domain_name,
+    ts1.domain_name,
     ts1.start_stamp AS start_stamp_src,
     ts1.end_stamp AS end_stamp_src,
     ts2.xml_cdr_uuid AS xml_cdr_uuid_dest,
@@ -52,81 +52,81 @@ SELECT ts1.xml_cdr_uuid,
     ts2.end_stamp AS end_stamp_dest
 FROM v_xml_cdr ts1
 LEFT join
-	v_xml_cdr ts2 on
-		ts1.domain_name = ts2.domain_name and
-		ts1.xml_cdr_uuid <> ts2.xml_cdr_uuid and
-		ts2.start_stamp <= ts1.end_stamp and
-		ts2.end_stamp >= ts1.start_stamp
+    v_xml_cdr ts2 on
+        ts1.domain_name = ts2.domain_name and
+        ts1.xml_cdr_uuid <> ts2.xml_cdr_uuid and
+        ts2.start_stamp <= ts1.end_stamp and
+        ts2.end_stamp >= ts1.start_stamp
 where
-	ts1.start_stamp >= $startStamp and
-	ts1.end_stamp <= $endStamp and
-	ts2.xml_cdr_uuid IS NOT NULL
+    ts1.start_stamp >= $startStamp and
+    ts1.end_stamp <= $endStamp and
+    ts2.xml_cdr_uuid IS NOT NULL
 ),
 
 concurrent_call_events AS (
 select
-	count(*) + 1 AS concurrent_calls,
-	call_events.xml_cdr_uuid,
+    count(*) + 1 AS concurrent_calls,
+    call_events.xml_cdr_uuid,
     call_events.domain_name,
     call_events.start_stamp_src,
     call_events.end_stamp_src
 from
-	call_events
+    call_events
 GROUP by
-	call_events.xml_cdr_uuid,
-	call_events.domain_name,
-	call_events.start_stamp_src,
-	call_events.end_stamp_src
+    call_events.xml_cdr_uuid,
+    call_events.domain_name,
+    call_events.start_stamp_src,
+    call_events.end_stamp_src
 ),
 
 domain_names AS (
 SELECT distinct
-	v_xml_cdr.domain_name
+    v_xml_cdr.domain_name
 from
-	v_xml_cdr
+    v_xml_cdr
 where
-	v_xml_cdr.start_stamp < $endStamp and
-	v_xml_cdr.end_stamp > $startStamp
+    v_xml_cdr.start_stamp < $endStamp and
+    v_xml_cdr.end_stamp > $startStamp
 ),
 
 template_data AS (
 select
-	d.domain_name,
+    d.domain_name,
     ts.start_interval,
     ts.end_interval,
     0 AS active_calls
 from
-	ts_data ts
+    ts_data ts
 CROSS join
-	domain_names d
+    domain_names d
 ),
 
 results AS (
 select
-	td.domain_name,
+    td.domain_name,
     td.start_interval,
     td.end_interval,
     COALESCE(max(c.concurrent_calls), 0::bigint) AS active_calls
 from
-	template_data td
+    template_data td
 LEFT join
-	concurrent_call_events c on
-		td.domain_name = c.domain_name and
-		c.start_stamp_src >= td.start_interval and
-		c.start_stamp_src <= td.end_interval
+    concurrent_call_events c on
+        td.domain_name = c.domain_name and
+        c.start_stamp_src >= td.start_interval and
+        c.start_stamp_src <= td.end_interval
 GROUP by
-	td.domain_name,
-	td.start_interval,
-	td.end_interval
+    td.domain_name,
+    td.start_interval,
+    td.end_interval
 )
 
 select
-	domain_name,
+    domain_name,
     start_interval,
     end_interval,
     active_calls
 from
-	results;
+    results;
 ";
         Log::info("Query to execute", [
             'sql' => $sql
