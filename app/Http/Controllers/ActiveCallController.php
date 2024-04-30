@@ -127,6 +127,8 @@ select
     active_calls
 from
     results;
+order by
+    domain_name, start_interval;
 ";
         Log::info("Query to execute", [
             'sql' => $sql
