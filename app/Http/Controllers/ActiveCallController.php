@@ -23,9 +23,9 @@ class ActiveCallController extends Controller
         $end = (clone $start)->endOfDay();
         $res = $validated['resolution'] ?? 5;
 
-        $startStamp = "'${start}'::TIMESTAMP";
-        $endStamp = "'${end}'::TIMESTAMP";
-        $resolution = "'${res} minutes'::INTERVAL";
+        $startStamp = "'$start'::TIMESTAMP";
+        $endStamp = "'$end'::TIMESTAMP";
+        $resolution = "'$res minutes'::INTERVAL";
         Log::info("Params to query", [
             'start' => $startStamp,
             'end' => $endStamp,
@@ -55,8 +55,8 @@ LEFT join
 	v_xml_cdr ts2 on
 		ts1.domain_name = ts2.domain_name and
 		ts1.xml_cdr_uuid <> ts2.xml_cdr_uuid and
-		ts2.start_stamp >= ts1.start_stamp and
-		ts2.start_stamp <= ts1.end_stamp
+		ts2.start_stamp <= ts1.end_stamp and
+		ts2.end_stamp >= ts1.start_stamp
 where
 	ts1.start_stamp >= $startStamp and
 	ts1.end_stamp <= $endStamp and
@@ -118,15 +118,15 @@ GROUP by
 	td.domain_name,
 	td.start_interval,
 	td.end_interval
-) 
-        
+)
+
 select
 	domain_name,
     start_interval,
     end_interval,
     active_calls
 from
-	results;            
+	results;
 ";
         Log::info("Query to execute", [
             'sql' => $sql
@@ -216,7 +216,6 @@ ORDER BY
         $data = DB::connection("pgsql")->select(DB::raw($sql));
 
         return response()->json($data);
-
     }
     public function index(Request $request): JsonResponse
     {
@@ -228,20 +227,19 @@ ORDER BY
             return response()->json([
                 'message' => 'Failed validation, date must be a valid date'
             ]);
-
         }
 
         $validated = $validator->validated();
 
         $date = Carbon::createFromTimestamp(strtotime(data_get($validated, 'date', now())));
-          return response()
+        return response()
             ->json($this->getCallsByDate($date));
     }
 
     public function getCallsByDate(Carbon $date, int $interval = 15)
     {
-        $from = clone($date)->startOfDay();
-        $to = clone($date)->endOfDay();
+        $from = clone ($date)->startOfDay();
+        $to = clone ($date)->endOfDay();
 
         return ActiveCall::query()
             ->whereNull('domain')
@@ -250,10 +248,10 @@ ORDER BY
             ->get()
             ->groupBy(function ($call) use ($interval) {
                 $timestampInMinutes = $call->created_at->startOfMinute()->timestamp / 60;
-                $timestamp = ($timestampInMinutes - ($timestampInMinutes % $interval))*60;
+                $timestamp = ($timestampInMinutes - ($timestampInMinutes % $interval)) * 60;
                 return Carbon::createFromTimestamp($timestamp)->format('Y-m-d H:i');
             })
-            ->map(fn($value, $key) => (object)[
+            ->map(fn ($value, $key) => (object)[
                 'timestamp' => $key,
                 'inbound' => (int)$value->max('inbound') ?? 0,
                 'outbound' => (int)$value->max('outbound') ?? 0,
