@@ -126,7 +126,7 @@ select
     end_interval,
     active_calls
 from
-    results;
+    results
 order by
     domain_name, start_interval;
 ";
